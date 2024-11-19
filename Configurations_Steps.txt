@@ -1,0 +1,84 @@
+[Configration]
+@STEP1: Make interface 1-4 trunk -->
+*DS1(config)#interface range fa0/1-4
+*DS1(config-if-range)#switchport trunk encapsulation dot1q
+*DS1(config-if-range)#switchport mode trunk
+@STEP2: Creat VTP doman -->
+*DS1(config)#VTP domain (CAIRO) or any name
+@STEP3: creat VLAN 10& 20 -->
+*DS1(config)#vlan 10
+*DS1(config)#vlan 20
+@STEP4: access fa0/1 to vlan10 and access fa/24 to vlan20 (on AS 1234) -->
+*AS1(config)#interface fa0/1
+*AS1(config-if)#switchport mode access
+*AS1(config-if)#switchport access vlan 10
+*AS1(config)#interface fa0/24
+*AS1(config-if)#switchport mode access
+*AS1(config-if)#switchport access vlan 20
+$repeat these on AS 2,3&4
+@STEP5: set IPs on interfaces g0/1 & 0/2 for  DS1,DS2&CORE1
+*DS1(config)#interface g0/1
+*DS1(config-if)#ip address 192.168.1.1 255.255.255.0
+*DS1(config-if)#no shutdown
+*DS1(config)#interface g0/2
+*DS1(config-if)#ip address 192.168.2.1 255.255.255.0
+*DS1(config-if)#no shutdown
+@STEP6: enable ospf for CORE1,DS1&DS2 -->
+*CORE1(config)#router ospf 1 
+*CORE1(config-router)#router-id 1.1.1.1
+CORE1(config-router)#network 192.168.1.0 0.0.0.255
+CORE1(config-router)#network 192.168.2.0 0.0.0.255
+*DS1(config)#router ospf 1
+*DS1(config-router)#router-id 2.2.2.2
+*DS1(config-router)#network 192.168.10.0 0.0.0.255 area 0
+*DS1(config-router)#network 192.168.20.0 0.0.0.255 area 0
+*DS2(config)#router ospf 1
+*DS2(config-router)#router-id 3.3.3.3
+*DS2(config-
+DS2(config-*router)#network 192.168.2.0 0.0.0.255 area 0
+*DS2(config-router)#network 192.168.10.0 0.0.0.255 area 0
+*DS2(config-router)#network 192.168.20.0 0.0.0.255 area 0
+@STEP7: create default route on CORE1 , ISP & R1-->
+*CORE1(config)#ip route 0.0.0.0 0.0.0.0 50.0.0.2
+*ISP(config)#ip route 0.0.0.0 0.0.0.0 60.0.0.2
+*R1(config)#ip route 0.0.0.0 0.0.0.0 60.0.0.1
+@STEP8: create ospf default information originate
+to make it the defualt route fro any unknown ip from the other multy layer switches -->
+*CORE1(config)#router ospf 1
+*CORE1(config-router)#default-information originate
+@STEP9: Create NAT -->
+*CORE1(config)#interface g/01
+*CORE1(config-if)#ip nat inside
+*CORE1(config-if)#interface g0/2
+*CORE1(config-if)#ip nat inside
+*CORE1(config)#interface ser0/3/0
+*CORE1(config-if)#ip nat outside 
+@STEP10: Create Access list for VLAN 10&20 -->
+*CORE1(config)#access-list 1 permit 192.168.10.0 0.0.0.255 
+*CORE1(config)#access-list 1 permit 192.168.20.0 0.0.0.255 
+@STEP11: Active NAT Protocol -->
+* CORE1(config)#ip nat inside source list 1 interface fastEthernet 0/1 overload
+---------------------------------------------------------------------------------------
+[HSRP]
+@HSRP FOR VLAN10 ON DS1:
+*DS1(config)#interface vlan 10
+*DS1(config-if)#standby 10 ip 192.168.10.150
+*DS1(config-if)#standby preempt 
+*DS1(config-if)#standby priority 105
+*DS1(config-if)#standby 10 track g0/1
+@HSRP FOR VLAN20 ON DS1:
+*DS1(config)#interface vlan 20
+*DS1(config-if)#standby 20 ip 192.168.20.150
+*DS1(config-if)#standby preempt 
+@HSRP FOR VLAN10 ON DS2:
+*DS2(config)#interface vlan 10
+*DS2(config-if)#standby 10 ip 192.168.10.150
+*DS2(config-if)#standby preempt 
+@HSRP FOR VLAN20 ON DS2:
+*DS2(config)#interface vlan 20 
+*DS2(config-if)#standby 20 ip 192.168.20.150 
+*DS2(config-if)#standby preempt 
+*DS2(config-if)#standby priority 105 
+*DS2(config-if)#standby 20 track g0/2
+
+----------------------------------------------------------------

@@ -1,0 +1,26 @@
+CORE1(config)#enable secret core0000
+CORE1(config-line)#password admin123
+CORE1(config)#ip domain-name cisco.com
+CORE1(config)#username admin secret admin123
+
+-----------------------------------------------
+AS1(config)#enable secret As1111
+
+AS2(config)#enable secret As2222
+
+AS3(config)#enable secret As3333
+
+AS4(config)#enable secret As4444
+
+
+
+-------------------------------------------------
+[layer2security]
+AS1(config)#interface range fa0/1 , fa0/24
+AS1(config-if-range)#switchport port-security maximum 2
+AS1(config-if-range)#switchport port-security mac-address sticky
+AS1(config-if-range)#switchport port-security violation shutdown
+AS1(config)#interface range fa0/4-23
+AS1(config-if-range)#shutdown 
+"we did it on AS 2,3&4"
+

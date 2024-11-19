@@ -1,0 +1,22 @@
+R1(config)#interface g0/1
+R1(config-if)#ip address 192.168.25.1 255.255.255.0
+R1(config-if)#no shutdown 
+R1(config)#interface se 0/3/1
+R1(config-if)#ip address 60.0.0.2 255.255.255.0
+R1(config-if)#no shutdown 
+----------------------------------------------------------------
+[DHCP]
+R1(config)# ip dhcp pool LAN_POOL
+R1(dhcp-config)# network 192.168.1.0 255.255.255.0
+R1(dhcp-config)# default-router 192.168.1.1
+R1(dhcp-config)# dns-server 8.8.8.8
+R1(dhcp-config)# exit
+R1(config)# ip dhcp excluded-address 192.168.1.1
+------------------------------------------------------------------
+[security]
+R1(config)#access-list 100 permit tcp any host 192.168.25.3 eq 443
+R1(config)#access-list 100 permit icmp any host 192.168.25.2 echo
+R1(config)#interface gigabitEthernet 0/1
+R1(config-if)#ip access-group 100 out
+
+
